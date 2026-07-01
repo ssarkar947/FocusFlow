@@ -54,19 +54,23 @@ const DEFAULT_SETTINGS: UserSettings = {
 
 // Helper to notify the extension via DOM custom events
 const notifyExtension = (state: any) => {
-  if (typeof window !== 'undefined') {
-    const event = new CustomEvent('FOCUSFLOW_STATE_CHANGED', {
-      detail: JSON.parse(JSON.stringify({
-        goals: state.goals,
-        projects: state.projects,
-        tasks: state.tasks,
-        sessions: state.sessions,
-        dailyReviews: state.dailyReviews,
-        weeklyReviews: state.weeklyReviews,
-        settings: state.settings,
-      })),
-    });
-    window.dispatchEvent(event);
+  try {
+    if (typeof window !== 'undefined') {
+      const event = new CustomEvent('FOCUSFLOW_STATE_CHANGED', {
+        detail: JSON.parse(JSON.stringify({
+          goals: state.goals || [],
+          projects: state.projects || [],
+          tasks: state.tasks || [],
+          sessions: state.sessions || [],
+          dailyReviews: state.dailyReviews || [],
+          weeklyReviews: state.weeklyReviews || [],
+          settings: state.settings || {},
+        })),
+      });
+      window.dispatchEvent(event);
+    }
+  } catch (err) {
+    console.warn('Failed to notify extension:', err);
   }
 };
 
