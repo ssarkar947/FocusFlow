@@ -15,11 +15,9 @@ export const FocusTimer: React.FC = () => {
   } = useStore();
 
   const activeSession = sessions[sessions.length - 1];
-  const isTimerActive = activeSession && !activeSession.completed;
+  const isTimerActive = !!(activeSession && !activeSession.completed);
   
-  if (!isTimerActive) return null;
-
-  const currentTask = tasks.find(t => t.id === activeSession.taskId);
+  const currentTask = tasks.find(t => t.id === activeSession?.taskId);
   
   // Custom or default focus duration in seconds
   const defaultDurationSec = (settings?.defaultFocusDuration || 25) * 60;
@@ -35,11 +33,21 @@ export const FocusTimer: React.FC = () => {
   const lastBreak = breaks[breaks.length - 1];
   const activeSessionPaused = lastBreak && !lastBreak.end;
 
+  // Reset time left when activeSession changes
   useEffect(() => {
-    setIsPaused(!!activeSessionPaused);
-  }, [activeSessionPaused]);
+    if (isTimerActive) {
+      setTimeLeft(defaultDurationSec);
+      setSessionCompleted(false);
+    }
+  }, [activeSession?.id, defaultDurationSec, isTimerActive]);
 
   useEffect(() => {
+    if (!isTimerActive) return;
+    setIsPaused(!!activeSessionPaused);
+  }, [activeSessionPaused, isTimerActive]);
+
+  useEffect(() => {
+    if (!isTimerActive) return;
     if (!isPaused && timeLeft > 0 && !sessionCompleted) {
       timerRef.current = setInterval(() => {
         setTimeLeft((prev) => {
@@ -58,7 +66,7 @@ export const FocusTimer: React.FC = () => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [isPaused, timeLeft, sessionCompleted]);
+  }, [isPaused, timeLeft, sessionCompleted, isTimerActive]);
 
   const handleTimerComplete = () => {
     // Play completion sound
@@ -101,6 +109,9 @@ export const FocusTimer: React.FC = () => {
       setTimeLeft(defaultDurationSec);
     }
   };
+
+  // Only return UI after ALL hooks have been registered to avoid React hooks errors
+  if (!isTimerActive) return null;
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
