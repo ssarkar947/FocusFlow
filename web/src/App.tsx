@@ -69,6 +69,9 @@ export const App: React.FC = () => {
 
   // Seed default demo data if store is empty to show premium look
   useEffect(() => {
+    const isSeeded = localStorage.getItem('focusflow_demo_seeded');
+    if (isSeeded) return;
+
     if (goals.length === 0 && projects.length === 0 && tasks.length === 0) {
       // Seed store manually since actions trigger progress updates
       // Using direct zustand store set is easier, but let's use the actions in sequence to preserve calculations.
@@ -81,10 +84,13 @@ export const App: React.FC = () => {
         icon: '🚀',
       });
     }
-  }, []);
+  }, [goals, projects, tasks]);
 
   // When we added a goal, seed project/tasks if needed
   useEffect(() => {
+    const isSeeded = localStorage.getItem('focusflow_demo_seeded');
+    if (isSeeded) return;
+
     if (goals.length === 1 && projects.length === 0) {
       const parentGoalId = goals[0].id;
       addProject({
@@ -108,6 +114,9 @@ export const App: React.FC = () => {
   }, [goals, projects]);
 
   useEffect(() => {
+    const isSeeded = localStorage.getItem('focusflow_demo_seeded');
+    if (isSeeded) return;
+
     if (projects.length === 2 && tasks.length === 0) {
       const projId1 = projects.find(p => p.name === 'Web Application Core')?.id;
       const projId2 = projects.find(p => p.name === 'Chrome Extension popup')?.id;
@@ -154,6 +163,9 @@ export const App: React.FC = () => {
           isRecurring: false,
         });
       }
+
+      // Mark seeding as complete so we never re-trigger it
+      localStorage.setItem('focusflow_demo_seeded', 'true');
     }
   }, [projects, tasks]);
 
