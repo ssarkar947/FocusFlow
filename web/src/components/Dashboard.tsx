@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useStore } from '../store/useStore';
-import { Plus, CheckCircle2, Circle, Flame, Timer, Award, Calendar, Star } from 'lucide-react';
+import { Plus, CheckCircle2, Circle, Flame, Timer, Award, Calendar, Star, Trash2, Play } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
   const { 
@@ -10,7 +10,8 @@ export const Dashboard: React.FC = () => {
     addTask, 
     toggleTaskCompletion, 
     setBigThree,
-    startFocusSession
+    startFocusSession,
+    deleteTask
   } = useStore();
 
   const [newTaskName, setNewTaskName] = useState('');
@@ -232,15 +233,24 @@ export const Dashboard: React.FC = () => {
                         </div>
                       </div>
 
-                      {task.status !== 'Completed' && (
+                      <div className="flex items-center gap-2">
+                        {task.status !== 'Completed' && (
+                          <button
+                            onClick={() => startFocusSession(task.id)}
+                            className="text-xs px-3 py-1.5 rounded-full bg-accent-main text-white font-medium hover:bg-opacity-90 transition-all flex items-center gap-1 active:scale-95"
+                          >
+                            <Timer size={12} />
+                            <span>Start Focus</span>
+                          </button>
+                        )}
                         <button
-                          onClick={() => startFocusSession(task.id)}
-                          className="text-xs px-3 py-1.5 rounded-full bg-accent-main text-white font-medium hover:bg-opacity-90 transition-all flex items-center gap-1 active:scale-95"
+                          onClick={() => { if (confirm('Delete this task?')) deleteTask(task.id); }}
+                          className="p-1.5 text-text-secondary hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20 transition-all active:scale-95"
+                          title="Delete task"
                         >
-                          <Timer size={12} />
-                          <span>Start Focus</span>
+                          <Trash2 size={14} />
                         </button>
-                      )}
+                      </div>
                     </div>
                   ))
                 )}
@@ -287,9 +297,19 @@ export const Dashboard: React.FC = () => {
                         
                         <button
                           onClick={() => startFocusSession(task.id)}
-                          className="h-7 w-7 rounded-full border border-border-main hover:bg-bg-muted flex items-center justify-center transition-colors text-text-secondary"
+                          className="text-xs px-2.5 py-1.5 rounded-full bg-accent-main text-white font-semibold hover:bg-opacity-90 transition-all flex items-center gap-1 active:scale-95 shadow-xs"
+                          title="Start focus timer"
                         >
-                          <Timer size={14} />
+                          <Play size={10} fill="currentColor" />
+                          <span>Start</span>
+                        </button>
+
+                        <button
+                          onClick={() => { if (confirm('Delete this task?')) deleteTask(task.id); }}
+                          className="p-1.5 text-text-secondary hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20 transition-all active:scale-95"
+                          title="Delete task"
+                        >
+                          <Trash2 size={14} />
                         </button>
                       </div>
                     </div>

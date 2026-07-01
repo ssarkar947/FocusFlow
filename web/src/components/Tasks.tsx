@@ -408,13 +408,22 @@ export const Tasks: React.FC = () => {
                   </button>
 
                   {task.status !== 'Archived' ? (
-                    <button
-                      onClick={() => handleArchive(task.id)}
-                      className="p-1.5 border border-border-main hover:bg-bg-muted text-text-secondary rounded-lg transition-colors"
-                      title="Archive task"
-                    >
-                      <Archive size={13} />
-                    </button>
+                    <>
+                      <button
+                        onClick={() => handleArchive(task.id)}
+                        className="p-1.5 border border-border-main hover:bg-bg-muted text-text-secondary rounded-lg transition-colors"
+                        title="Archive task"
+                      >
+                        <Archive size={13} />
+                      </button>
+                      <button
+                        onClick={() => { if (confirm('Delete this task?')) deleteTask(task.id); }}
+                        className="p-1.5 border border-red-200 hover:bg-red-50 dark:hover:bg-red-950/20 text-red-500 rounded-lg transition-colors"
+                        title="Delete task"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </>
                   ) : (
                     <button
                       onClick={() => deleteTask(task.id)}
