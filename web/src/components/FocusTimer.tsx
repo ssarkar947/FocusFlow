@@ -22,7 +22,7 @@ export const FocusTimer: React.FC = () => {
   const currentTask = tasks.find(t => t.id === activeSession.taskId);
   
   // Custom or default focus duration in seconds
-  const defaultDurationSec = settings.defaultFocusDuration * 60;
+  const defaultDurationSec = (settings?.defaultFocusDuration || 25) * 60;
   
   const [timeLeft, setTimeLeft] = useState(defaultDurationSec);
   const [isPaused, setIsPaused] = useState(false);
@@ -31,7 +31,8 @@ export const FocusTimer: React.FC = () => {
   const timerRef = useRef<any>(null);
 
   // Sync isPaused with activeSession break state
-  const lastBreak = activeSession.breaks[activeSession.breaks.length - 1];
+  const breaks = activeSession?.breaks || [];
+  const lastBreak = breaks[breaks.length - 1];
   const activeSessionPaused = lastBreak && !lastBreak.end;
 
   useEffect(() => {

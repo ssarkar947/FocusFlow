@@ -515,13 +515,17 @@ export const useStore = create<AppState & StoreActions>()(
         // Extension Sync
         importState: (importedState) => {
           set((state) => {
-            const merged = {
+            return {
               ...state,
               ...importedState,
-              // Keep settings merged
+              goals: importedState.goals || state.goals || [],
+              projects: importedState.projects || state.projects || [],
+              tasks: importedState.tasks || state.tasks || [],
+              sessions: importedState.sessions || state.sessions || [],
+              dailyReviews: importedState.dailyReviews || state.dailyReviews || [],
+              weeklyReviews: importedState.weeklyReviews || state.weeklyReviews || [],
               settings: { ...state.settings, ...(importedState.settings || {}) },
             };
-            return merged;
           });
         },
       };
