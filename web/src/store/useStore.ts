@@ -297,8 +297,8 @@ export const useStore = create<AppState & StoreActions>()(
           };
           set((state) => {
             const nextState = {
-              sessions: [...state.sessions, newSession],
-              tasks: state.tasks.map((t) => (t.id === taskId ? { ...t, status: 'In Progress' as TaskStatus } : t)),
+              sessions: [...(state.sessions || []), newSession],
+              tasks: (state.tasks || []).map((t) => (t.id === taskId ? { ...t, status: 'In Progress' as TaskStatus } : t)),
             };
             notifyExtension({ ...state, ...nextState });
             return nextState;
@@ -307,16 +307,17 @@ export const useStore = create<AppState & StoreActions>()(
 
         pauseFocusSession: () => {
           set((state) => {
-            const lastSession = state.sessions[state.sessions.length - 1];
+            const sessions = state.sessions || [];
+            const lastSession = sessions[sessions.length - 1];
             if (!lastSession || lastSession.completed) return state;
 
             const updatedSession = {
               ...lastSession,
-              breaks: [...lastSession.breaks, { start: new Date().toISOString() }],
+              breaks: [...(lastSession.breaks || []), { start: new Date().toISOString() }],
             };
 
             const nextState = {
-              sessions: state.sessions.map((s) => (s.id === lastSession.id ? updatedSession : s)),
+              sessions: sessions.map((s) => (s.id === lastSession.id ? updatedSession : s)),
             };
             notifyExtension({ ...state, ...nextState });
             return nextState;
@@ -325,11 +326,13 @@ export const useStore = create<AppState & StoreActions>()(
 
         resumeFocusSession: () => {
           set((state) => {
-            const lastSession = state.sessions[state.sessions.length - 1];
+            const sessions = state.sessions || [];
+            const lastSession = sessions[sessions.length - 1];
             if (!lastSession || lastSession.completed) return state;
 
-            const nextBreaks = lastSession.breaks.map((b, idx) => {
-              if (idx === lastSession.breaks.length - 1 && !b.end) {
+            const breaks = lastSession.breaks || [];
+            const nextBreaks = breaks.map((b, idx) => {
+              if (idx === breaks.length - 1 && !b.end) {
                 return { ...b, end: new Date().toISOString() };
               }
               return b;
@@ -341,7 +344,7 @@ export const useStore = create<AppState & StoreActions>()(
             };
 
             const nextState = {
-              sessions: state.sessions.map((s) => (s.id === lastSession.id ? updatedSession : s)),
+              sessions: sessions.map((s) => (s.id === lastSession.id ? updatedSession : s)),
             };
             notifyExtension({ ...state, ...nextState });
             return nextState;
@@ -350,7 +353,8 @@ export const useStore = create<AppState & StoreActions>()(
 
         endFocusSession: (completed) => {
           set((state) => {
-            const lastSession = state.sessions[state.sessions.length - 1];
+            const sessions = state.sessions || [];
+            const lastSession = sessions[sessions.length - 1];
             if (!lastSession || lastSession.completed) return state;
 
             const endTime = new Date().toISOString();
@@ -360,7 +364,8 @@ export const useStore = create<AppState & StoreActions>()(
             const endTimeMs = new Date(endTime).getTime();
             let totalBreakTimeMs = 0;
 
-            lastSession.breaks.forEach((b) => {
+            const breaks = lastSession.breaks || [];
+            breaks.forEach((b) => {
               const breakStart = new Date(b.start).getTime();
               const breakEnd = b.end ? new Date(b.end).getTime() : endTimeMs;
               totalBreakTimeMs += (breakEnd - breakStart);
@@ -377,11 +382,11 @@ export const useStore = create<AppState & StoreActions>()(
             };
 
             // Update task actual focus time
-            const nextTasks = state.tasks.map((t) => {
+            const nextTasks = (state.tasks || []).map((t) => {
               if (t.id === lastSession.taskId) {
                 return {
                   ...t,
-                  actualTime: t.actualTime + durationMin,
+                  actualTime: (t.actualTime || 0) + durationMin,
                   status: completed ? ('Completed' as TaskStatus) : t.status,
                   completedAt: completed ? new Date().toISOString() : t.completedAt,
                 };
@@ -389,10 +394,10 @@ export const useStore = create<AppState & StoreActions>()(
               return t;
             });
 
-            const { updatedProjects, updatedGoals } = recalculateAllProgress(nextTasks, state.projects, state.goals);
+            const { updatedProjects, updatedGoals } = recalculateAllProgress(nextTasks, state.projects || [], state.goals || []);
 
             const nextState = {
-              sessions: state.sessions.map((s) => (s.id === lastSession.id ? updatedSession : s)),
+              sessions: sessions.map((s) => (s.id === lastSession.id ? updatedSession : s)),
               tasks: nextTasks,
               projects: updatedProjects,
               goals: updatedGoals,
@@ -404,16 +409,17 @@ export const useStore = create<AppState & StoreActions>()(
 
         incrementInterruption: () => {
           set((state) => {
-            const lastSession = state.sessions[state.sessions.length - 1];
+            const sessions = state.sessions || [];
+            const lastSession = sessions[sessions.length - 1];
             if (!lastSession || lastSession.completed) return state;
 
             const updatedSession = {
               ...lastSession,
-              interruptionsCount: lastSession.interruptionsCount + 1,
+              interruptionsCount: (lastSession.interruptionsCount || 0) + 1,
             };
 
             const nextState = {
-              sessions: state.sessions.map((s) => (s.id === lastSession.id ? updatedSession : s)),
+              sessions: sessions.map((s) => (s.id === lastSession.id ? updatedSession : s)),
             };
             notifyExtension({ ...state, ...nextState });
             return nextState;
