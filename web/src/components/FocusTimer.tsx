@@ -10,6 +10,7 @@ export const FocusTimer: React.FC = () => {
     pauseFocusSession, 
     resumeFocusSession, 
     endFocusSession, 
+    cancelActiveSession,
     incrementInterruption,
     settings 
   } = useStore();
@@ -104,7 +105,7 @@ export const FocusTimer: React.FC = () => {
 
   const handleCancelSession = () => {
     if (confirm('Cancel this focus session? No progress will be saved.')) {
-      endFocusSession(false);
+      cancelActiveSession();
       setSessionCompleted(false);
       setTimeLeft(defaultDurationSec);
     }

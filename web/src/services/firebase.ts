@@ -31,6 +31,10 @@ export const startFirebaseSync = (config: any, userId: string = 'default_user') 
     // 1. Remote -> Local Sync
     // Listen for Firestore updates and sync them to Zustand
     unsubscribeRemote = onSnapshot(userDocRef, (docSnap) => {
+      if (docSnap.metadata.hasPendingWrites) {
+        console.log('Ignoring snapshot with pending local writes to prevent state regression');
+        return;
+      }
       if (docSnap.exists()) {
         const remoteState = docSnap.data();
         console.log('Syncing state from Firestore...');

@@ -27,6 +27,7 @@ interface StoreActions {
   pauseFocusSession: () => void;
   resumeFocusSession: () => void;
   endFocusSession: (completed: boolean) => void;
+  cancelActiveSession: () => void;
   incrementInterruption: () => void;
 
   // Review actions
@@ -405,6 +406,32 @@ export const useStore = create<AppState & StoreActions>()(
               tasks: nextTasks,
               projects: updatedProjects,
               goals: updatedGoals,
+            };
+            notifyExtension({ ...state, ...nextState });
+            return nextState;
+          });
+        },
+
+        cancelActiveSession: () => {
+          set((state) => {
+            const sessions = state.sessions || [];
+            const lastSession = sessions[sessions.length - 1];
+            if (!lastSession || lastSession.completed) return state;
+
+            // Remove the active session completely
+            const nextSessions = sessions.filter((s) => s.id !== lastSession.id);
+
+            // Revert task status back to 'Todo' if it was set to 'In Progress'
+            const nextTasks = (state.tasks || []).map((t) => {
+              if (t.id === lastSession.taskId && t.status === 'In Progress') {
+                return { ...t, status: 'Todo' as TaskStatus };
+              }
+              return t;
+            });
+
+            const nextState = {
+              sessions: nextSessions,
+              tasks: nextTasks,
             };
             notifyExtension({ ...state, ...nextState });
             return nextState;
